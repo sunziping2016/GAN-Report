@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{enumitem}
 
 % Include other packages here, before hyperref.
 
@@ -52,7 +53,7 @@ Tsinghua University\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-
+% Goal, Approach, Novel Contribution, Conclusion
 In the past few years, computer vision has achieved rapid development, and the
 Generative Adverarial Network~\cite{GAN} has attracted wide attention since
 proposed in 2014. In this paper, we aimed to generate from noise and to transfer
@@ -60,27 +61,49 @@ from existing pictures to anime avatars, which is an interesting and practical
 task. There have been many paper achieving this kind of task, such as
 DCGAN~\cite{DCGAN}, CartoonGAN~\cite{CartoonGAN} and
 CycleGAN~\cite{CycleGAN2017}. In this paper, we reimplement these three models
-and tune them to archieve better performance on this specific task. And then, we
+and tune them to achieve better performance on this specific task. And then, we
 give several novel loss functions to make models perform better, such as face
-key point loss, greyscale loss and color loss. As last, we compare the different
+key point loss, greyscale loss and color loss. At last, we compare the different
 results between these three models and come to the conclusion that DCGAN is
 generally a good choice to generate images from noise, CycleGan performs the
 best on image tansfering while CartoonGAN tends to preserve image details, which
 results to a poorer performance.
-
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
 \section{Introduction}
 
-Since the introduction of GAN~\cite{GAN},
-there have been many networks using GAN~\cite{GAN} to generate anime avatars. There are currently
-two main ways to achieve this task: the first is to directly generate a anime avatar
-and the input is random noise; the second belongs to the category of picture style
-transfer, that is generating corresponding two-dimensional animation Style avatar with given real
-character avatar.
+% GAN, DCGAN, CycleGAN, Evalutaion method
+Generally speaking, image generating and style transferring belongs to the
+generative problem. And deep generative models have achieved impressive success
+in this field. Among all deep generative models, the most outstanding ones, for
+the time being, are Generative Adversarial Networks (GANs) and Variational
+Autoencoders (VAEs). In our work, we focus on GANs.
 
-For the first approach, the current DCGAN~\cite{DCGAN} has achieved very good results.
+Traditional GANs consist of two parts, the generator and the discriminator. The
+generator tries to generate fake outputs similar to the real data, while the
+discriminator tries to tell the real ones apart from the fake ones. When they
+trained together, the discriminator drives the generator to generate realer
+outputs, and meanwhile, the generated realer outputs also drive the
+descriminator to jugde more correctly. And finally, in order to deceive the
+discriminator, the generator can be well-trained for the generating task, that's
+exactly what we want. It is also notable that these two parts may not
+necessarily be trained exactly simultaneously. One part can be pretrained, or
+they can be trained alternatively.
+
+As mentioned above, there are two ways to generate anime avatars:
+
+\begin{itemize}[noitemsep, topsep=0pt]
+   \item generate: directly generate a anime avatar from random noise
+   \item transfer: generate corresponding anime avatar from real human avatar
+\end{itemize}
+
+For the first approach, DCGAN is among one of the most state-of-the-art models.
+It is a variation of GAN, in which transposed convolutions are added. It is
+mainly aimed for image generating tasks. Transposed convolutions are the inverse
+operation of normal convolutions, and they just broadcast input values through
+the kernels, resulting a larger output shape, which is useful for up-sampling.
+
 The character's head of the output picture is very clear, the lines are very coherent, and there
 is no serious deformation. But it may be because the input is random noise and the data
 set is not large enough, the homogeneity of the generated content is more serious, and the
