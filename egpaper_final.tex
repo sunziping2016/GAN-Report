@@ -24,7 +24,7 @@
 \begin{document}
 
 %%%%%%%%% TITLE
-\title{Final Report}
+\title{Generating Anime Avatars Using GANs \\ \large Final Report for Deep Learning Course}
 
 \author{Wang Ao\\
 Tsinghua University\\
@@ -52,31 +52,35 @@ Tsinghua University\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   We study to generate anime avatars using GAN. In the past few years,
-   the field of computer vision has achieved rapid development, and the Generative Adverarial
-   Network~\cite{GAN} has attracted wide attention since it was proposed in 2014.
-   It is considered to be one of the biggest breakthrough in deep learning in recent
-   years. The number of papers surrounding GANs has also increased rapidly. In many projects
-   around GAN, generating anime avatars is an interesting and practical task. On the
-   one hand, there have been many articles to achieve the task of generating
-   second-dimensional images, such as dcGAN~\cite{dcGAN} and CartoonGAN~\cite{CartoonGAN}.
-   On the other hand, this project also has many problems to be solved. For example,
-   it is difficult to have a good evaluation standard in the quality evaluation of generated
-   images. We compare the different results between CartoonGAN~\cite{CartoonGAN} and dcGAN~\cite{dcGAN},
-   and try to give a new loss function to perform better.
+
+In the past few years, computer vision has achieved rapid development, and the
+Generative Adverarial Network~\cite{GAN} has attracted wide attention since
+proposed in 2014. In this paper, we aimed to generate from noise and to transfer
+from existing pictures to anime avatars, which is an interesting and practical
+task. There have been many paper achieving this kind of task, such as
+DCGAN~\cite{DCGAN}, CartoonGAN~\cite{CartoonGAN} and
+CycleGAN~\cite{CycleGAN2017}. In this paper, we reimplement these three models
+and tune them to archieve better performance on this specific task. And then, we
+give several novel loss functions to make models perform better, such as face
+key point loss, greyscale loss and color loss. As last, we compare the different
+results between these three models and come to the conclusion that DCGAN is
+generally a good choice to generate images from noise, CycleGan performs the
+best on image tansfering while CartoonGAN tends to preserve image details, which
+results to a poorer performance.
+
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
 \section{Introduction}
 
-Generating anime avatars is a very interesting task. Since the introduction of GAN~\cite{GAN},
+Since the introduction of GAN~\cite{GAN},
 there have been many networks using GAN~\cite{GAN} to generate anime avatars. There are currently
 two main ways to achieve this task: the first is to directly generate a anime avatar
 and the input is random noise; the second belongs to the category of picture style
 transfer, that is generating corresponding two-dimensional animation Style avatar with given real
 character avatar.
 
-For the first approach, the current dcGAN~\cite{dcGAN} has achieved very good results.
+For the first approach, the current DCGAN~\cite{DCGAN} has achieved very good results.
 The character's head of the output picture is very clear, the lines are very coherent, and there
 is no serious deformation. But it may be because the input is random noise and the data
 set is not large enough, the homogeneity of the generated content is more serious, and the
@@ -155,17 +159,20 @@ However, their work places high demands on the quality of the training set, the 
 figure must have a high color saturation to get anime-like outputs. At the same time,
 it doesn't provide a good method to guarantee that the image is a portrait.
 
-On the other hand, dcGAN~\cite{dcGAN} made some great improvements on the basis of traditional GAN.
+On the other hand, DCGAN~\cite{DCGAN} made some great improvements on the basis of traditional GAN.
 It set a series of restrictions for the network topology of CNN to make it stable training, and
 used the obtained feature representations for image classification so that it get better results
 to verify the expression ability of the generated image feature representations.
-{\color{red}Continue adding more information about dcGAN's advantages and limitation...}
+{\color{red}Continue adding more information about DCGAN's advantages and limitation...}
 
 
 %------------------------------------------------------------------------
 \section{Approach}
+\subsection{Generate from Noise Using DCGAN}
+A DCGAN model
 
 
+\subsection{Transfer from Real Avatar Using CycleGAN}
 
 %------------------------------------------------------------------------
 \section{Experiment}
