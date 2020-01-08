@@ -1,0 +1,181 @@
+% TEX program=xelatex
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+\usepackage[breaklinks=true,bookmarks=false]{hyperref}
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+%\ifcvprfinal\pagestyle{empty}\fi
+\setcounter{page}{1}
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{Final Report}
+
+\author{Wang Ao\\
+Tsinghua University\\
+2017010395\\
+{\tt\small wa17@mails.tsinghua.edu.cn}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Sun Ziping\\
+Tsinghua University\\
+2015013249\\
+{\tt\small sunziping2016@yeah.net}
+\and
+Cui Yanfei\\
+Tsinghua University\\
+2017012326\\
+{\tt\small 929881841@qq.com}
+}
+
+\maketitle
+%\thispagestyle{empty}
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+   We study to generate anime avatars using GAN. In the past few years,
+   the field of computer vision has achieved rapid development, and the Generative Adverarial
+   Network~\cite{GAN} has attracted wide attention since it was proposed in 2014.
+   It is considered to be one of the biggest breakthrough in deep learning in recent
+   years. The number of papers surrounding GANs has also increased rapidly. In many projects
+   around GAN, generating anime avatars is an interesting and practical task. On the
+   one hand, there have been many articles to achieve the task of generating
+   second-dimensional images, such as dcGAN~\cite{dcGAN} and CartoonGAN~\cite{CartoonGAN}.
+   On the other hand, this project also has many problems to be solved. For example,
+   it is difficult to have a good evaluation standard in the quality evaluation of generated
+   images. We compare the different results between CartoonGAN~\cite{CartoonGAN} and dcGAN~\cite{dcGAN},
+   and try to give a new loss function to perform better.
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+
+Generating anime avatars is a very interesting task. Since the introduction of GAN~\cite{GAN},
+there have been many networks using GAN~\cite{GAN} to generate anime avatars. There are currently
+two main ways to achieve this task: the first is to directly generate a anime avatar
+and the input is random noise; the second belongs to the category of picture style
+transfer, that is generating corresponding two-dimensional animation Style avatar with given real
+character avatar.
+
+For the first approach, the current dcGAN~\cite{dcGAN} has achieved very good results.
+The character's head of the output picture is very clear, the lines are very coherent, and there
+is no serious deformation. But it may be because the input is random noise and the data
+set is not large enough, the homogeneity of the generated content is more serious, and the
+characters always look like the same. At the same time, it is difficult for us to have a better
+evaluation index to judge the effectiveness of the model. In addition, the training of GAN
+is very unstable, which leads to the need for a large amount of hyperparameter tuning work.
+{\color{red}Continue adding more information about direct generating...}
+
+As for the second approach, CartoonGAN~\cite{CartoonGAN} is able to successfully convert landscape photos
+into anime style. When we apply CartoonGAN~\cite{CartoonGAN} to the task of character head style transfer,
+we need a new dataset, a new feature extraction module, and an adaptation to the face.
+In the feature extraction module, we use the classic VGG19~\cite{VGG} as the feature extraction
+module of the picture to extract the animation elements. For the human face adaptation,
+we added a landmark loss function of the human face to mark the key points of the human face and
+help the discriminator to better identify whether the generated image is a human face. In addition,
+we have also added style loss function, image content loss function,
+grayscale loss function and color loss function, making it less difficult to
+judge the quality of image generation.
+
+%------------------------------------------------------------------------
+\section{Related Work}
+
+\subsection{Non-photorealistic rendering (NPR)}
+In order to mimic specific artistic styles (including animation~\cite{rosin2012image}), many automatic and
+semi-automatic NPR algorithms have been developed. Most of the works are animated by
+using a simple shadow rendering method~\cite{saito1990comprehensible}. One technique, called  \textsl{cel shading}, is widely
+used in the creation of games, animations, and movies, saving artists a lot of time~\cite{luque2012cel}.
+
+To mimic the cartoon style, people have developed various methods to create
+images with flat shadows. These methods either use image filtering~\cite{winnemoller2006real} or use specific
+transformation formulas~\cite{xu2011image} in optimization problems. However, it is difficult to
+capture rich artistic styles using only simple mathematical formulas. In
+particular, filtering or optimizing the entire image does not create the
+high-level abstractions that artists typically require. For portraits, people
+also have special algorithms~\cite{yang2010semantics, rosin2015non}, in which semantic segmentation can be automatically
+derived by detecting facial components. However, these methods cannot handle general images.
+
+\subsection{Convolutional neural networks}
+With the great success of convolutional neural networks~\cite{krizhevsky2012imagenet, lawrence1997face} in the field of
+computer vision, people are looking forward to their performance in the
+field of image style transfer and image generation. Compared with the
+traditional complex NPR algorithm~\cite{saito1990comprehensible,luque2012cel}, CNN is indeed more convenient and more
+applicable. For example, in the task of image style transfer, the VGG
+network~\cite{VGG} has a good ability to extract picture features.
+
+For the style and content of the image, Gatys et al.~\cite{NST} first proposed a
+CNN-based neural style transfer (NST) method that can transfer the style
+of a picture from one picture to another. They use a feature map of a
+pre-trained VGG network to extract picture content and optimize the
+resulting image, so that it can match the corresponding texture information
+described by the global Gram matrix~\cite{gatys2015texture} while retaining the original content
+of the image. However, such operations caused a serious loss of the edge
+information and shadow information of the picture.
+
+\subsection{Image synthesis with GANs}
+The other genre using GANs~\cite{GAN} has achieved great imporvement. It has achieved
+the state of the art results in the fields of text-to-image translation~\cite{reed2016generative}, image
+inpainting~\cite{yeh2016semantic}, and image super-resolution~\cite{ledig2017photo}, etc. The key idea of the GAN model
+is to train two networks (generator and discriminator). Iteratively,
+the adversarial loss provided by the discriminator transforms the
+generated image into a target manifold~\cite{yeh2016semantic}. However, GANs are very unstable to train and
+often make the generator produce meaningless output.
+
+Some literatures~\cite{dumoulin2016adversarially,isola2017image,karacan2016learning} provided solutions using GANs for pixel-level image
+synthesis problems. However, these methods require paired data sets
+during the training process, but such high-quality data sets are
+difficult to obtain and therefore cannot be used for our training.
+
+On the one hand, CartoonGAN effectively solved the above problems by using a GAN model
+to learn the mapping between photos using unpaired training data and
+cartoon manifolds. They formulate the process of learning to transform realworld
+photos into cartoon images as a mapping function which maps the photo
+manifold to the cartoon manifold~\cite{CartoonGAN}. Additionally, they proposed
+edge-promoting adversarial loss in order to generate sharper edges just like anime works.
+However, their work places high demands on the quality of the training set, the input
+figure must have a high color saturation to get anime-like outputs. At the same time,
+it doesn't provide a good method to guarantee that the image is a portrait.
+
+On the other hand, dcGAN~\cite{dcGAN} made some great improvements on the basis of traditional GAN.
+It set a series of restrictions for the network topology of CNN to make it stable training, and
+used the obtained feature representations for image classification so that it get better results
+to verify the expression ability of the generated image feature representations.
+{\color{red}Continue adding more information about dcGAN's advantages and limitation...}
+
+
+%------------------------------------------------------------------------
+\section{Approach}
+
+
+
+%------------------------------------------------------------------------
+\section{Experiment}
+
+%------------------------------------------------------------------------
+\section{Conclusion}
+
+{\small
+\bibliographystyle{ieee}
+\bibliography{egbib}
+}
+
+\end{document}
