@@ -8,6 +8,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{enumitem}
+\usepackage{subcaption}
+\usepackage{float}
 
 % Include other packages here, before hyperref.
 
@@ -19,13 +21,17 @@
 
 \def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
 
+\graphicspath{ {./figures/} }
+
+
 % Pages are numbered in submission mode, and unnumbered in camera-ready
 %\ifcvprfinal\pagestyle{empty}\fi
 \setcounter{page}{1}
 \begin{document}
 
 %%%%%%%%% TITLE
-\title{Generating Anime Avatars Using GANs \\ \large Final Report for Deep Learning Course}
+\title{Generating Anime Avatars Using Generative Adversarial Networks \\
+\large Final Report for Deep Learning Course}
 
 \author{Wang Ao\\
 Tsinghua University\\
@@ -54,13 +60,13 @@ Tsinghua University\\
 %%%%%%%%% ABSTRACT
 \begin{abstract}
 % Goal, Approach, Novel Contribution, Conclusion
-In the past few years, computer vision has achieved rapid development, and the
-Generative Adverarial Network~\cite{GAN} has attracted wide attention since
+In the past few years, computer vision has achieved rapid development, and
+Generative Adverarial Networks~\cite{GAN} have attracted wide attention since
 proposed in 2014. In this paper, we aimed to generate from noise and to transfer
 from existing pictures to anime avatars, which is an interesting and practical
 task. There have been many paper achieving this kind of task, such as
-DCGAN~\cite{DCGAN}, CartoonGAN~\cite{CartoonGAN} and
-CycleGAN~\cite{CycleGAN2017}. In this paper, we reimplement these three models
+DCGAN~\cite{DCGAN}, CycleGAN~\cite{CycleGAN2017} and
+CartoonGAN~\cite{CartoonGAN}. In this paper, we reimplement these three models
 and tune them to achieve better performance on this specific task. And then, we
 give several novel loss functions to make models perform better, such as face
 key point loss, greyscale loss and color loss. At last, we compare the different
@@ -94,108 +100,245 @@ they can be trained alternatively.
 As mentioned above, there are two ways to generate anime avatars:
 
 \begin{itemize}[noitemsep, topsep=0pt]
-   \item generate: directly generate a anime avatar from random noise
-   \item transfer: generate corresponding anime avatar from real human avatar
+   \item directly generate a anime avatar from random noise
+   \item generate corresponding anime avatar from real human avatar
 \end{itemize}
 
 For the first approach, DCGAN is among one of the most state-of-the-art models.
 It is a variation of GAN, in which transposed convolutions are added. It is
 mainly aimed for image generating tasks. Transposed convolutions are the inverse
-operation of normal convolutions, and they just broadcast input values through
-the kernels, resulting a larger output shape, which is useful for up-sampling.
+operation of normal convolutions, and they broadcast input values through the
+kernels, resulting a larger output shape, which is useful for up-sampling.
 
-The character's head of the output picture is very clear, the lines are very coherent, and there
-is no serious deformation. But it may be because the input is random noise and the data
-set is not large enough, the homogeneity of the generated content is more serious, and the
-characters always look like the same. At the same time, it is difficult for us to have a better
-evaluation index to judge the effectiveness of the model. In addition, the training of GAN
-is very unstable, which leads to the need for a large amount of hyperparameter tuning work.
-{\color{red}Continue adding more information about direct generating...}
+As for the second approach, according to the dataset given, it can be classified
+to two kinds of problems. One is based on paired image transfer, while the other
+is unpaired. In our work, dataset is unpaired. CycleGANs perform best on this
+task. CycleGAN consists of two generators and two descriminators. Source images
+first goes through one generator resulting in fake target images and then goes
+through the other generator producing reconstruction source images. And for the
+target images, they are processed in a similar way. The origin and
+reconstruction images can be compared to get a cylce consistency loss, which
+helps the model to be trained.
 
-As for the second approach, CartoonGAN~\cite{CartoonGAN} is able to successfully convert landscape photos
-into anime style. When we apply CartoonGAN~\cite{CartoonGAN} to the task of character head style transfer,
-we need a new dataset, a new feature extraction module, and an adaptation to the face.
-In the feature extraction module, we use the classic VGG19~\cite{VGG} as the feature extraction
-module of the picture to extract the animation elements. For the human face adaptation,
-we added a landmark loss function of the human face to mark the key points of the human face and
-help the discriminator to better identify whether the generated image is a human face. In addition,
-we have also added style loss function, image content loss function,
-grayscale loss function and color loss function, making it less difficult to
-judge the quality of image generation.
+We also take a look at CartoonGAN. It is suitable for image transferring but
+without a cyclic structure. Two novel losses are proposed: (1) a semantic
+content loss, which forces the features of photos and cartoons to be close, and
+(2) an edge-promoting loss to preserve clear edges, since edges in cartoons are
+generally clearer than that of photos.
+
+However, it still remains to be a difficult question how to evaluate the
+performance of a generative model. So we just manually analyze the generated
+images. Though this accessment method is subjective, the result is generally
+universal.
 
 %------------------------------------------------------------------------
 \section{Related Work}
 
 \subsection{Non-photorealistic rendering (NPR)}
-In order to mimic specific artistic styles (including animation~\cite{rosin2012image}), many automatic and
-semi-automatic NPR algorithms have been developed. Most of the works are animated by
-using a simple shadow rendering method~\cite{saito1990comprehensible}. One technique, called  \textsl{cel shading}, is widely
-used in the creation of games, animations, and movies, saving artists a lot of time~\cite{luque2012cel}.
+In order to mimic specific artistic styles (including
+animation~\cite{rosin2012image}), many automatic and semi-automatic NPR
+algorithms have been developed. Most of the works are animated by using a simple
+shadow rendering method~\cite{saito1990comprehensible}. One technique, called
+\textsl{cel shading}, is widely used in the creation of games, animations, and
+movies, saving artists a lot of time~\cite{luque2012cel}.
 
 To mimic the cartoon style, people have developed various methods to create
-images with flat shadows. These methods either use image filtering~\cite{winnemoller2006real} or use specific
-transformation formulas~\cite{xu2011image} in optimization problems. However, it is difficult to
-capture rich artistic styles using only simple mathematical formulas. In
+images with flat shadows. These methods either use image
+filtering~\cite{winnemoller2006real} or use specific transformation
+formulas~\cite{xu2011image} in optimization problems. However, it is difficult
+to capture rich artistic styles using only simple mathematical formulas. In
 particular, filtering or optimizing the entire image does not create the
 high-level abstractions that artists typically require. For portraits, people
-also have special algorithms~\cite{yang2010semantics, rosin2015non}, in which semantic segmentation can be automatically
-derived by detecting facial components. However, these methods cannot handle general images.
+also have special algorithms~\cite{yang2010semantics, rosin2015non}, in which
+semantic segmentation can be automatically derived by detecting facial
+components. However, these methods cannot handle general images.
 
 \subsection{Convolutional neural networks}
-With the great success of convolutional neural networks~\cite{krizhevsky2012imagenet, lawrence1997face} in the field of
-computer vision, people are looking forward to their performance in the
-field of image style transfer and image generation. Compared with the
-traditional complex NPR algorithm~\cite{saito1990comprehensible,luque2012cel}, CNN is indeed more convenient and more
-applicable. For example, in the task of image style transfer, the VGG
-network~\cite{VGG} has a good ability to extract picture features.
+With the great success of convolutional neural networks
+~\cite{krizhevsky2012imagenet, lawrence1997face} in the field of computer
+vision, people are looking forward to their performance in the field of image
+style transfer and image generation. Compared with the traditional complex NPR
+algorithm~\cite{saito1990comprehensible,luque2012cel}, CNN is indeed more
+convenient and more applicable. For example, in the task of image style
+transfer, the VGG network~\cite{VGG} has a good ability to extract picture
+features.
 
 For the style and content of the image, Gatys et al.~\cite{NST} first proposed a
-CNN-based neural style transfer (NST) method that can transfer the style
-of a picture from one picture to another. They use a feature map of a
-pre-trained VGG network to extract picture content and optimize the
-resulting image, so that it can match the corresponding texture information
-described by the global Gram matrix~\cite{gatys2015texture} while retaining the original content
-of the image. However, such operations caused a serious loss of the edge
-information and shadow information of the picture.
+CNN-based neural style transfer (NST) method that can transfer the style of a
+picture from one picture to another. They use a feature map of a pre-trained VGG
+network to extract picture content and optimize the resulting image, so that it
+can match the corresponding texture information described by the global Gram
+matrix~\cite{gatys2015texture} while retaining the original content of the
+image. However, such operations caused a serious loss of the edge information
+and shadow information of the picture.
 
 \subsection{Image synthesis with GANs}
-The other genre using GANs~\cite{GAN} has achieved great imporvement. It has achieved
-the state of the art results in the fields of text-to-image translation~\cite{reed2016generative}, image
-inpainting~\cite{yeh2016semantic}, and image super-resolution~\cite{ledig2017photo}, etc. The key idea of the GAN model
-is to train two networks (generator and discriminator). Iteratively,
-the adversarial loss provided by the discriminator transforms the
-generated image into a target manifold~\cite{yeh2016semantic}. However, GANs are very unstable to train and
-often make the generator produce meaningless output.
+The other method using GANs~\cite{GAN} has achieved great imporvement.
+It has achieved the state of the art results in the fields of text-to-image
+translation~\cite{reed2016generative}, image inpainting~\cite{yeh2016semantic},
+and image super-resolution~\cite{ledig2017photo}, etc. The key idea of the GAN
+model is to train two networks (generator and discriminator). Iteratively, the
+adversarial loss provided by the discriminator transforms the generated image
+into a target manifold~\cite{yeh2016semantic}.
 
-Some literatures~\cite{dumoulin2016adversarially,isola2017image,karacan2016learning} provided solutions using GANs for pixel-level image
-synthesis problems. However, these methods require paired data sets
-during the training process, but such high-quality data sets are
-difficult to obtain and therefore cannot be used for our training.
-
-On the one hand, CartoonGAN effectively solved the above problems by using a GAN model
-to learn the mapping between photos using unpaired training data and
-cartoon manifolds. They formulate the process of learning to transform realworld
-photos into cartoon images as a mapping function which maps the photo
-manifold to the cartoon manifold~\cite{CartoonGAN}. Additionally, they proposed
-edge-promoting adversarial loss in order to generate sharper edges just like anime works.
-However, their work places high demands on the quality of the training set, the input
-figure must have a high color saturation to get anime-like outputs. At the same time,
-it doesn't provide a good method to guarantee that the image is a portrait.
-
-On the other hand, DCGAN~\cite{DCGAN} made some great improvements on the basis of traditional GAN.
-It set a series of restrictions for the network topology of CNN to make it stable training, and
-used the obtained feature representations for image classification so that it get better results
-to verify the expression ability of the generated image feature representations.
-{\color{red}Continue adding more information about DCGAN's advantages and limitation...}
-
+Some literatures~\cite{dumoulin2016adversarially,isola2017image,
+karacan2016learning} provided solutions using GANs for pixel-level image
+synthesis problems. However, these methods require paired data sets during the
+training process, but such high-quality data sets are difficult to obtain and
+therefore cannot be used for our training.
 
 %------------------------------------------------------------------------
 \section{Approach}
+
+\subsection{Prepare Dataset}
+
+We downloaded three datasets. One is real person photos, and the other two
+belongs to anime avatars. The datasets are show in Table \ref{tab:datasets}, and
+some examples drawn from datasets are show in Figure \ref{fig:dataset-examples}.
+
+\begin{table}[h]
+   \centering
+   \begin{tabular}{|c|c|c|}
+   \hline
+   name & category & no of samples \\ \hline
+   Anime & labeled anime avatars & 115087 \\ \hline
+   Thumbs & unlabeled real photos & 3666 \\ \hline
+   Faces & unlabeled anime avatars & 51223 \\ \hline
+   \end{tabular}
+   \caption{The dataset we use in our project. We will refer to these dataset
+   using their name in this paper.}
+   \label{tab:datasets}
+\end{table}
+
+\vspace{-2.5em}
+\begin{figure}[h]
+   \centering
+   \begin{subfigure}{0.48\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{thumbs-examples}
+      \vspace{-2em}
+      \caption{Examples from Thumbs}
+   \end{subfigure}
+   \begin{subfigure}{0.48\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{faces-examples}
+      \vspace{-2em}
+      \caption{Examples from Faces}
+   \end{subfigure}
+   \caption{Some example images from datasets}
+   \label{fig:dataset-examples}
+\end{figure}
+
 \subsection{Generate from Noise Using DCGAN}
-A DCGAN model
 
+\begin{figure}[t]
+   \centering
+   \begin{subfigure}{\linewidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{dcgan-g}
+      \caption{Generator Architecture of DCGAN}
+   \end{subfigure}
+   \begin{subfigure}{\linewidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{dcgan-d}
+      \caption{Discriminator Architecture of DCGAN}
+   \end{subfigure}
+   \caption{Architecture of DCGAN. Here the number of k represents kernel size,
+   n is the output size and s is stride}
+   \label{fig:dcgan-arch}
+\end{figure}
 
-\subsection{Transfer from Real Avatar Using CycleGAN}
+The architecture of our DCGAN model is shown in Figure \ref{fig:dcgan-arch}. The
+input of the generator is a noise of length 100 drawn from normal standard
+normal distribution. Then the input is expanded to the shape of
+$512\times 4\times 4$ and goes through another 3 transposed convolution layer
+up-sampling to the shape of $64\times 32\times 32$, each of which reduce the
+input channels to half and expand the input size twice. And then the input is
+processed by a size-preserving convolution layer called extra layers by us,
+which changes the channel number to 3. Finally the input goes thought a
+transposed convolution layer, which doubles the size. Every convolution layer
+except the last one is followed by a batch normalization layer and a leakly ReLU
+activiation layer. The last convolution layers outputs directly to the Tanh
+activiation layer. Thus, the generated image has a size of
+$3\times 64\times 64$, of which elements are in range $(-1, 1)$.
+
+The discriminator is like a reverse version of the generator. The input size is
+$3\times 64\times 64$, it is first converted to the size of
+$64\times 32\times 32$ by a convolution layer. And then it undergoes 3
+convolution layers, each of which doubles the channel number and cut the size to
+half. Then it goes through a channel-and-size-preserving convolution layer, and
+the output is of size $512\times 4\times 4$. Finally, the data is processed by
+one convolution layer, of which the output is of size $1\times 1\times 1$. It is
+notable that the descriminator does not use any fully connected layer.
+
+We use Anime dataset as the input of DCGAN. The input is normalized to standard
+normalization distribution, because the fake images also obey this distribution.
+The training procedure consists of two phases. In the first phase, the generated
+fake images and the real images are feed to discriminator and measured with
+binary cross entropy loss. In the second phase, the loss function tries the make
+the generator generate images that trick the descriminator into thinking they
+are real.
+
+\subsection{Transfer from Real Photos Using CycleGAN}
+
+\begin{figure*}[h]
+   \centering
+   \begin{subfigure}{.32\linewidth}
+      \centering
+      \includegraphics[width=.9\linewidth]{cyclegan-arch}
+      \caption{Whole Architecture of CycleGAN}
+   \end{subfigure}
+   \begin{subfigure}{.32\linewidth}
+      \centering
+      \includegraphics[width=.9\linewidth]{cyclegan-g}
+      \caption{Generator of CycleGAN}
+   \end{subfigure}
+   \begin{subfigure}{.32\linewidth}
+      \centering
+      \includegraphics[width=.9\linewidth]{cyclegan-d}
+      \caption{Discriminator of CycleGAN}
+   \end{subfigure}
+   \caption{Architecture of CycleGAN}
+   \label{fig:cyclegan-arch}
+\end{figure*}
+
+Figure \ref{fig:cyclegan-arch} shows the architecture of out CycleGAN. CycleGAN
+consists of two generators and two discriminators. The generators use two
+down-sampling convolution layers, 4 ResNet blocks and two up-sampling
+convolution layers. Since the model is a bit too large to fit in our computer's
+GPU memory, the number of channels is made smaller than DCGAN. At first, we use
+one down-sampling and one up-sampling, but preliminary experiment show that
+shallower down-sampling and up-sampling layers lead to poorer generization
+ability of the networks. So we change the numbers of down-sampling and
+up-sampling layers to two. And it seems the networks work much more better.
+
+The discriminators are similar to the ones of DCGAN. But the outputs contain
+not only one element. The discriminators are binary classification models, so
+the output shapes do not matter, as the real labels and fake labels can be any
+shape of ones and zeros.
+
+We use Thumbs dataset and Faces dataset as the input of CycleGAN. Hereinafter,
+we will refer these two dataset as $A$ and $B$, two generators as $G_{A2B}$ and
+$G_{B2A}$, and two discriminators as $D_A$ and $D_B$. Similar to DCGAN, the
+training process of CycleGAN also has two steps. One is updating generators, and
+the other is updating discriminators. In the updating generator step, there
+existing six losses of three kinds. They are:
+\begin{itemize}[noitemsep, topsep=0pt]
+   \item Identity loss: $G_{A2B}(B)$ should be similar to $x$, and $G_{B2A}(A)$
+   should also be similar to $x$. This kind of losses is measured by L1.
+   \item GAN loss: $D_B(G_{A2B}(A))$ and $D_A(G_{B2A}(B))$ need to be classified
+   as real. This kind of losses is measured by MSE. It can be measured by BCE,
+   but experiments show MSE is better.
+   \item Cycle loss: $G_{B2A}(G_{A2B}(A))$ should be similar to $A$, and
+   $G_{A2B}(G_{B2A}(B))$ should be similar to $B$. This is measured by L1.
+\end{itemize}
+These three losses are sumed up at the ratio of 5:1:10. As for the updating
+descriminator step, the losses try to make $D_B(G_{A2B}(A))$ and
+$D_A(G_{B2A}(B))$ classified as fake and $D_A(A)$, $D_B(B)$ classified as real.
+Furthermore, we use a fake image pool~\cite{shrivastava2017learning} to help the
+descriminator remember its historical decision.
+
+\subsection{Transfer from Real Photos Using CartoonGAN}
 
 %------------------------------------------------------------------------
 \section{Experiment}
