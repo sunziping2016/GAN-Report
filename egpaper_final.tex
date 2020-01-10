@@ -46,7 +46,7 @@ Tsinghua University\\
 Sun Ziping\\
 Tsinghua University\\
 2015013249\\
-{\tt\small sunziping2016@yeah.net}
+{\tt\small me@szp.io}
 \and
 Cui Yanfei\\
 Tsinghua University\\
@@ -69,11 +69,11 @@ DCGAN~\cite{DCGAN}, CycleGAN~\cite{CycleGAN2017} and
 CartoonGAN~\cite{CartoonGAN}. In this paper, we reimplement these three models
 and tune them to achieve better performance on this specific task. And then, we
 give several novel loss functions to make models perform better, such as face
-key point loss, greyscale loss and color loss. At last, we compare the different
-results between these three models and come to the conclusion that DCGAN is
-generally a good choice to generate images from noise, CycleGan performs the
-best on image tansfering while CartoonGAN tends to preserve image details, which
-results to a poorer performance.
+landmark loss. At last, we compare the different results between these three
+models and come to the conclusion that DCGAN is generally a good choice to
+generate images from noise, CycleGan performs the best on image tansfering while
+CartoonGAN tends to preserve image details, which results to a poorer
+performance.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -275,7 +275,7 @@ We use Anime dataset as the input of DCGAN. The input is normalized to standard
 normalization distribution, because the fake images also obey this distribution.
 The training procedure consists of two phases. In the first phase, the generated
 fake images and the real images are feed to discriminator and measured with
-binary cross entropy loss. In the second phase, the loss function tries the make
+binary cross entropy (BCE) loss. In the second phase, the loss function tries the make
 the generator generate images that trick the descriminator into thinking they
 are real.
 
@@ -340,8 +340,73 @@ descriminator remember its historical decision.
 
 \subsection{Transfer from Real Photos Using CartoonGAN}
 
+CartoonGAN has no cyclic structure. As shown in Figure
+\ref{fig:cartoongan-arch}, its generator consists of two down-sampling
+convolution layers, 8 ResNet blocks and two up-sampling convolution layers. Its
+discriminator consists of 7 convolution layers including two down-sampling
+layer.
+
+\begin{figure}[th]
+   \centering
+   \begin{subfigure}{\linewidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{cartoongan-g}
+      \caption{Generator of CartoonGAN}
+   \end{subfigure}
+   \begin{subfigure}{\linewidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{cartoongan-d}
+      \caption{Discriminator of CartoonGAN}
+   \end{subfigure}
+   \caption{Architecture of CartoonGAN}
+   \label{fig:cartoongan-arch}
+\end{figure}
+
+The datasets CartoonGAN uses are the same as the ones CycleGAN uses. But there
+is one special preprocessing step, which creates another dataset based on Faces
+(referred as $B$) through a process called edge promoting. We will refer this
+generated dataset as $E$ hereinafter. During the process, first of all, edges
+are detected, and then the pixels near the edges are convolved with Gaussian
+kernel. This makes the edges in the pictures become smoother, in other words,
+less sharper. The idea is that the picture of which edges are smooth should be
+classified as real images, aka fake anime images, because cartoon images
+generally have sharper edges. In addition, CartoonGAN uses a pretrained VGG19 as
+feature extraction model for calculating content loss. We will refer it as
+$VGG$.
+
+We will refer the generator as $G$ and the discriminator as $D$. During the
+training step of $D$, the BCE losses drive $D$ to classify $D(B)$ as real,
+$D(G(A))$ and $D(E)$ as fake. During the training step of $G$, three losses are
+added together:
+\begin{itemize}[noitemsep, topsep=0pt]
+   \item GAN loss: $D(G(A))$ should be classified as real.
+   \item Content loss: $VGG(A)$ and $VGG(G(A))$ should be similar measured by L1
+   loss, because the content of the source and generated images should be same.
+   \item Style loss: $Gram(VGG(B))$ and $Gram(VGG(A))$ should be similar
+   measured by L1 loss. Here $Gram$ means the Gram matrix. The idea is that the
+   style of the target and generated images should be same.
+\end{itemize}
+Another notable thing is that generator goes through a pretrained process
+minimizing the content loss.
+
+In addition to the origin work, we also tried to add some loss functions to help
+train the networks. These losses are:
+\begin{itemize}[noitemsep, topsep=0pt]
+   \item Face landmark loss: Give high priority to the key points on faces, so
+   that the important features on faces can be preserved.
+   This is inspired by \cite{wu2019landmark}.
+   \item Grayscale loss and color loss: Proposed by someone, criticized and
+   abandoned by me.
+\end{itemize}
+
 %------------------------------------------------------------------------
 \section{Experiment}
+
+\subsection{DCGAN}
+
+\subsection{CycleGAN}
+
+\subsection{CartoonGAN}
 
 %------------------------------------------------------------------------
 \section{Conclusion}
