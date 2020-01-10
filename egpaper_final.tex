@@ -10,6 +10,7 @@
 \usepackage{enumitem}
 \usepackage{subcaption}
 \usepackage{float}
+\usepackage{dblfloatfix}
 
 % Include other packages here, before hyperref.
 
@@ -71,7 +72,7 @@ and tune them to achieve better performance on this specific task. And then, we
 give several novel loss functions to make models perform better, such as face
 landmark loss. At last, we compare the different results between these three
 models and come to the conclusion that DCGAN is generally a good choice to
-generate images from noise, CycleGan performs the best on image tansfering while
+generate images from noise, CycleGAN performs the best on image tansfering while
 CartoonGAN tends to preserve image details, which results to a poorer
 performance.
 \end{abstract}
@@ -276,9 +277,9 @@ We use Anime dataset as the input of DCGAN. The input is normalized to standard
 normalization distribution, because the fake images also obey this distribution.
 The training procedure consists of two phases. In the first phase, the generated
 fake images and the real images are feed to discriminator and measured with
-binary cross entropy (BCE) loss. In the second phase, the loss function tries the make
-the generator generate images that trick the descriminator into thinking they
-are real.
+binary cross entropy (BCE) loss. In the second phase, the loss function tries
+the make the generator generate images that trick the descriminator into
+thinking they are real.
 
 \subsection{Transfer from Real Photos Using CycleGAN}
 
@@ -325,8 +326,8 @@ training process of CycleGAN also has two steps. One is updating generators, and
 the other is updating discriminators. In the updating generator step, there
 existing six losses of three kinds. They are:
 \begin{itemize}[noitemsep, topsep=0pt]
-   \item Identity loss: $G_{A2B}(B)$ should be similar to $x$, and $G_{B2A}(A)$
-   should also be similar to $x$. This kind of losses is measured by L1.
+   \item Identity loss: $G_{A2B}(B)$ should be similar to $B$, and $G_{B2A}(A)$
+   should also be similar to $A$. This kind of losses is measured by L1.
    \item GAN loss: $D_B(G_{A2B}(A))$ and $D_A(G_{B2A}(B))$ need to be classified
    as real. This kind of losses is measured by MSE. It can be measured by BCE,
    but experiments show MSE is better.
@@ -461,6 +462,98 @@ results.
 \end{figure}
 
 \subsection{CycleGAN}
+
+CycleGAN is trained with 128 batch size and 300 epochs. During the first 120
+epochs, the learning rate is $3\times 10^{-4}$, and after it, the learning rate
+is decreased to $3\times 10^{-5}$.
+
+Figure \ref{fig:cyclegan-loss} illustrates the training loss trends over time.
+It is obvious that the identity losses and cycle losses decreases gradually,
+while the GAN losses increases and seems to be unstable. The discriminator
+losses is nearly to be zero. All these losses indicate two facts: (1)
+the discriminator completely defeats the generator, (2) the generator is good at
+preserving inputs and poor at transferring, which means it behaves like an
+identity map, and that's not what we want.
+
+\begin{figure*}[h]
+   \centering
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_idt_a}
+      \caption{Identity loss: similarity loss between $G_{A2B}(B)$ and $B$}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_idt_b}
+      \caption{Identity loss: similarity loss between $G_{B2A}(A)$ and $A$}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_g_a}
+      \caption{GAN loss: BCE loss of $D_B(G_{A2B}(A))$ and real label}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_g_b}
+      \caption{GAN loss: BCE loss of $D_A(G_{B2A}(B))$ and real label}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_cycle_a}
+      \caption{Cycle loss: similarity loss between $G_{B2A}(G_{A2B}(A))$ and
+      $A$}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_cycle_b}
+      \caption{Cycle loss: similarity loss between $G_{A2B}(G_{B2A}(B))$ and
+      $B$}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_d_a}
+      \caption{Discriminator loss on $A$}
+   \end{subfigure}
+   \begin{subfigure}{.24\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{cyclegan-loss_d_b}
+      \caption{Discriminator loss on $B$}
+   \end{subfigure}
+   \caption{Training loss curve for CycleGAN. The training process is
+   interrupted three times and resumed from the checkpoints}
+   \label{fig:cyclegan-loss}
+\end{figure*}
+
+Let's take a look at the generated results shown in Figure
+\ref{fig:cyclegan-examples}. The origin images and the reconstructed ones look
+like exactly the same, which indicates the reconstruction ability of our
+CycleGAN is quite good. The generated images, however, are not in good form.
+Those generated from real photos get a little cartoon style but too colorful,
+and the face features of those images are distorted. Those images generated from
+anime avatars are patched unnaturally with a human face. The directions of the
+origin faces and the patched ones are not consistent.
+
+We can conclude that CycleGAN prove the ability to transfer between different
+domains, but not in a good manner. It may be because the domains of real photos
+and anime avatars have too much difference or because we place too much weight
+on the cycle loss limiting the transferring ability of the networks. Further
+experiments may be needed to analyze the root cause of the poor performance.
+
+\begin{figure}[h]
+   \centering
+   \begin{subfigure}{.48\linewidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{cycle-result-source.png}
+      \caption{From left to right are $A$, $G_{A2B}(A)$, $G_{B2A}(G_{A2B}(A))$}
+   \end{subfigure}
+   \begin{subfigure}{.48\linewidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{cycle-result-target.png}
+      \caption{From left to right are $B$, $G_{B2A}(B)$, $G_{A2B}(G_{B2A}(B))$}
+   \end{subfigure}
+   \caption{CycleGAN generated images: origin, generated and reconstructed ones}
+   \label{fig:cyclegan-examples}
+\end{figure}
 
 \subsection{CartoonGAN}
 
